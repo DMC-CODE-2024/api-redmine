@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Value;
 @Getter
 public enum ClientTypeEnum {
     REGISTERED,
-    UNREGISTERED,
+    END_USER,
     SYSTEM;
 
 }

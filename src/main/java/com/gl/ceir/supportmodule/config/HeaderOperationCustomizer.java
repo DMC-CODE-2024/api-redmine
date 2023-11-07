@@ -18,7 +18,7 @@ public class HeaderOperationCustomizer implements OperationCustomizer {
                 .description("Client Type Header")
                 .required(true)
                 .schema(new StringSchema())
-                .example("REGISTERED,UNREGISTERED,SYSTEM");
+                .example("REGISTERED,END_USER,SYSTEM");
 
         Parameter clientIdHeader = new Parameter()
                 .in("header")

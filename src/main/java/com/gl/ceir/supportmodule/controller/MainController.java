@@ -5,8 +5,11 @@ import com.gl.ceir.supportmodule.builder.CreateIssueRequestBuilder;
 import com.gl.ceir.supportmodule.client.RedmineClient;
 import com.gl.ceir.supportmodule.model.*;
 import com.gl.ceir.supportmodule.repository.IssueRepository;
+import com.gl.ceir.supportmodule.service.IssuesService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.apache.logging.log4j.LogManager;
@@ -20,7 +23,6 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -37,6 +39,41 @@ public class MainController {
     ClientInfo clientInfo;
     @Autowired
     IssueRepository issueRepository;
+    @Autowired
+    IssuesService issuesService;
+
+
+    @Operation(summary = "Get filtered tickets")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = IssueResponse.class)))),
+            @ApiResponse(responseCode = "400", description = "Bad Request", content = @Content)})
+    @RequestMapping(path = "/ticket", method = RequestMethod.GET)
+    public ResponseEntity<?> getFilteredIssues(
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate,
+            @RequestParam(required = false) String ticketId,
+            @RequestParam(required = false) String contactNumber,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String clientType,
+            @RequestParam int page,
+            @RequestParam int size
+    ) {
+        try{
+            List<IssuesEntity> filteredIssues = issuesService.getFilteredIssues(startDate, endDate, ticketId, contactNumber, status, clientType, page, size);
+            List<IssueResponse> issueResponses = filteredIssues.stream()
+                    .map(entity -> {
+                        String issueTicketId = entity.getTicketId();
+                        ClientTypeEnum userType = entity.getUserType();
+                        ResponseEntity<IssueResponse> resp = redmineClient.getIssueWithJournals(issueTicketId, userType, entity);
+                        return CreateIssueRequestBuilder.issueResponse(resp.getBody().getIssue(), entity);
+                    })
+                    .collect(Collectors.toList());
+            return ResponseEntity.ok(issueResponses);
+        } catch (Exception ex){
+            log.error("Exception while fetching filtered issues, {}",ex.getMessage());
+            return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+    }
 
     @Operation(summary = "Get issue by ticketId")
     @ApiResponses(value = {
@@ -44,7 +81,7 @@ public class MainController {
             @ApiResponse(responseCode = "404", description = "Not Found", content = @Content),
             @ApiResponse(responseCode = "400", description = "Bad Request", content = @Content),
             @ApiResponse(responseCode = "500", description = "Server Error", content = @Content)})
-    @RequestMapping(path = "/issue/{ticketId}", method = RequestMethod.GET)
+    @RequestMapping(path = "/ticket/{ticketId}", method = RequestMethod.GET)
     public ResponseEntity<IssueResponse> getIssueById(@PathVariable String ticketId) {
         try {
             ClientTypeEnum clientType = ClientInfo.getClientType();
@@ -69,7 +106,7 @@ public class MainController {
             @ApiResponse(responseCode = "404", description = "Not Found", content = @Content),
             @ApiResponse(responseCode = "400", description = "Bad Request", content = @Content),
             @ApiResponse(responseCode = "500", description = "Server Error", content = @Content)})
-    @RequestMapping(path = "/issue/msisdn/{msisdn}", method = RequestMethod.GET)
+    @RequestMapping(path = "/ticket/msisdn/{msisdn}", method = RequestMethod.GET)
     public ResponseEntity<List<IssueResponse>> getIssueByMsisdn(@PathVariable String msisdn) {
         try {
             List<IssuesEntity> issuesEntity = issueRepository.findByMsisdn(msisdn);
@@ -97,7 +134,7 @@ public class MainController {
             @ApiResponse(responseCode = "404", description = "Not Found", content = @Content),
             @ApiResponse(responseCode = "400", description = "Bad Request", content = @Content),
             @ApiResponse(responseCode = "500", description = "Server Error", content = @Content)})
-    @RequestMapping(path = "/issue", method = RequestMethod.POST)
+    @RequestMapping(path = "/ticket", method = RequestMethod.POST)
     public ResponseEntity<IssueResponse> createIssue(@RequestBody CreateIssueRequest createIssueRequest) {
         ClientTypeEnum clientType = ClientInfo.getClientType();
         return redmineClient.createIssue(createIssueRequest, clientType);
@@ -109,7 +146,7 @@ public class MainController {
             @ApiResponse(responseCode = "404", description = "Not Found"),
             @ApiResponse(responseCode = "400", description = "Bad Request"),
             @ApiResponse(responseCode = "500", description = "Server Error")})
-    @RequestMapping(path = "/issue/{ticketId}", method = RequestMethod.PUT)
+    @RequestMapping(path = "/ticket/{ticketId}", method = RequestMethod.PUT)
     public ResponseEntity<Void> updateIssue(@PathVariable String ticketId, @RequestBody RedmineIssueRequest createRedmineIssueRequest) {
         ClientTypeEnum clientType = ClientInfo.getClientType();
         Optional<IssuesEntity> issuesEntity = issueRepository.findByTicketId(ticketId);
@@ -126,7 +163,7 @@ public class MainController {
             @ApiResponse(responseCode = "404", description = "Not Found"),
             @ApiResponse(responseCode = "400", description = "Bad Request"),
             @ApiResponse(responseCode = "500", description = "Server Error")})
-    @RequestMapping(path = "/issue/{ticketId}/notes", method = RequestMethod.PUT)
+    @RequestMapping(path = "/ticket/{ticketId}/notes", method = RequestMethod.PUT)
     public ResponseEntity<Void> addNotes(@PathVariable String ticketId, @RequestBody CreateIssueRequest createIssueRequest) {
         ClientTypeEnum clientType = ClientInfo.getClientType();
         Optional<IssuesEntity> issuesEntity = issueRepository.findByTicketId(ticketId);
@@ -144,12 +181,12 @@ public class MainController {
             @ApiResponse(responseCode = "404", description = "Not Found"),
             @ApiResponse(responseCode = "400", description = "Bad Request"),
             @ApiResponse(responseCode = "500", description = "Server Error")})
-    @RequestMapping(path = "/issue/resolve/{ticketId}", method = RequestMethod.PUT)
+    @RequestMapping(path = "/ticket/resolve/{ticketId}", method = RequestMethod.PUT)
     public ResponseEntity<Void> resolveIssue(@PathVariable String ticketId) {
         ClientTypeEnum clientType = ClientInfo.getClientType();
         Optional<IssuesEntity> issuesEntity = issueRepository.findByTicketId(ticketId);
         if (issuesEntity.isPresent()){
-            if(clientType.equals(ClientTypeEnum.REGISTERED) || (clientType.equals(ClientTypeEnum.UNREGISTERED) && issuesEntity.get().getUserId().equals(ClientInfo.getClientId()))) {
+            if(clientType.equals(ClientTypeEnum.REGISTERED) || (clientType.equals(ClientTypeEnum.END_USER) && issuesEntity.get().getUserId().equals(ClientInfo.getClientId()))) {
                 RedmineIssueRequest createRedmineIssueRequest = CreateIssueRequestBuilder.resolveIssue(resolveStatusId);
                 return redmineClient.updateIssue(issuesEntity.get().getIssueId(), createRedmineIssueRequest, clientType);
             } else {
@@ -166,7 +203,7 @@ public class MainController {
             @ApiResponse(responseCode = "404", description = "Not Found", content = @Content),
             @ApiResponse(responseCode = "400", description = "Bad Request", content = @Content),
             @ApiResponse(responseCode = "500", description = "Server Error", content = @Content)})
-    @RequestMapping(path = "/issue/attachment/upload", method = RequestMethod.POST)
+    @RequestMapping(path = "/ticket/attachment/upload", method = RequestMethod.POST)
     public ResponseEntity<UploadResponse> handleFileUpload(@RequestParam("file") MultipartFile file) {
         try {
             ClientTypeEnum clientType = ClientInfo.getClientType();
@@ -184,7 +221,7 @@ public class MainController {
             @ApiResponse(responseCode = "404", description = "Not Found"),
             @ApiResponse(responseCode = "400", description = "Bad Request", content = @Content),
             @ApiResponse(responseCode = "500", description = "Server Error", content = @Content)})
-    @RequestMapping(path = "/issue/{ticketId}/rate", method = RequestMethod.POST)
+    @RequestMapping(path = "/ticket/{ticketId}/rate", method = RequestMethod.POST)
     public ResponseEntity<String> rateIssue(@PathVariable String ticketId, @RequestBody FeedbackRequest feedbackRequest) {
         try {
             Optional<IssuesEntity> issuesEntity = issueRepository.findByTicketId(ticketId);

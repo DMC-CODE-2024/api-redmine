@@ -23,7 +23,7 @@ public class RedmineClient {
     @Value("${redmine.base-url}")
     private String baseUrl;
 
-@Value("${redmine.registered-user-api-key}")
+    @Value("${redmine.registered-user-api-key}")
     private String unregisteredUserApiKey;
     @Value("${redmine.unregistered-user-api-key}")
     private String registeredUserApiKey;
@@ -144,7 +144,7 @@ public class RedmineClient {
 
     public String getClientApiKey(ClientTypeEnum type) {
         switch (type) {
-            case UNREGISTERED:
+            case END_USER:
                 return unregisteredUserApiKey;
             case REGISTERED:
                 return registeredUserApiKey;
