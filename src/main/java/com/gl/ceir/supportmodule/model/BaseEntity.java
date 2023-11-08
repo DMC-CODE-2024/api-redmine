@@ -2,12 +2,14 @@ package com.gl.ceir.supportmodule.model;
 
 import com.gl.ceir.supportmodule.Constants.ClientTypeEnum;
 import com.gl.ceir.supportmodule.Constants.Constant;
+import lombok.Builder;
 import lombok.Data;
 
 import javax.persistence.*;
 import java.util.Objects;
 
 @Data
+@Builder
 @MappedSuperclass
 public class BaseEntity {
     @Id

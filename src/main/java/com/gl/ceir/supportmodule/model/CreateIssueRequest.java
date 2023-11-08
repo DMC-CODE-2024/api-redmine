@@ -14,10 +14,6 @@ public class CreateIssueRequest {
     private String subject;
     private String description;
     private List<AttachmentRequest> attachments;
-    private String userId;
-    private ClientTypeEnum userType;
     private String raisedBy;
-    private String notes;
-    private Boolean privateNotes = false;
     private Boolean isPrivate;
 }

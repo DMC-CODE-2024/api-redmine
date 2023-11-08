@@ -7,6 +7,7 @@ import com.gl.ceir.supportmodule.model.*;
 import com.gl.ceir.supportmodule.repository.IssueRepository;
 import com.gl.ceir.supportmodule.service.IssuesService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -16,6 +17,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -45,12 +47,12 @@ public class MainController {
 
     @Operation(summary = "Get filtered tickets")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = IssueResponse.class)))),
+            @ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json", schema = @Schema(implementation = PaginatedResponse.class))),
             @ApiResponse(responseCode = "400", description = "Bad Request", content = @Content)})
     @RequestMapping(path = "/ticket", method = RequestMethod.GET)
     public ResponseEntity<?> getFilteredIssues(
-            @RequestParam(required = false) String startDate,
-            @RequestParam(required = false) String endDate,
+            @Parameter(description = "Start date (yyyy-MM-dd)", example = "2023-12-31", required = false) @RequestParam(required = false) String startDate,
+            @Parameter(description = "End date (yyyy-MM-dd)", example = "2023-12-31", required = false) @RequestParam(required = false) String endDate,
             @RequestParam(required = false) String ticketId,
             @RequestParam(required = false) String contactNumber,
             @RequestParam(required = false) String status,
@@ -59,16 +61,17 @@ public class MainController {
             @RequestParam int size
     ) {
         try{
-            List<IssuesEntity> filteredIssues = issuesService.getFilteredIssues(startDate, endDate, ticketId, contactNumber, status, clientType, page, size);
-            List<IssueResponse> issueResponses = filteredIssues.stream()
+            Page<IssuesEntity> pageResponse = issuesService.getFilteredIssues(startDate, endDate, ticketId, contactNumber, status, clientType, page, size);
+            List<IssueResponse> issueResponses = pageResponse.getContent().stream()
                     .map(entity -> {
-                        String issueTicketId = entity.getTicketId();
-                        ClientTypeEnum userType = entity.getUserType();
-                        ResponseEntity<IssueResponse> resp = redmineClient.getIssueWithJournals(issueTicketId, userType, entity);
+                        int issueId = entity.getIssueId();
+                        ClientTypeEnum userType = ClientTypeEnum.valueOf(entity.getUserType());
+                        ResponseEntity<IssueResponse> resp = redmineClient.getIssueWithJournals(issueId, userType, entity);
                         return CreateIssueRequestBuilder.issueResponse(resp.getBody().getIssue(), entity);
                     })
                     .collect(Collectors.toList());
-            return ResponseEntity.ok(issueResponses);
+            PaginatedResponse response = PaginatedResponse.builder().data(issueResponses).currentPage(page).totalPages(pageResponse.getTotalPages()).totalElements(pageResponse.getTotalElements()).numberOfElements(pageResponse.getNumberOfElements()).build();
+            return ResponseEntity.ok(response);
         } catch (Exception ex){
             log.error("Exception while fetching filtered issues, {}",ex.getMessage());
             return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
@@ -87,11 +90,12 @@ public class MainController {
             ClientTypeEnum clientType = ClientInfo.getClientType();
             Optional<IssuesEntity> issuesEntity = issueRepository.findByTicketId(ticketId);
             if (issuesEntity.isPresent()){
-                return redmineClient.getIssueWithJournals(issuesEntity.get().getTicketId(), clientType, issuesEntity.get());
+                return redmineClient.getIssueWithJournals(issuesEntity.get().getIssueId(), clientType, issuesEntity.get());
             } else {
                 return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
             }
         } catch (HttpClientErrorException.NotFound e) {
+            e.printStackTrace();
             log.error(e);
             return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
         } catch (Exception e) {
@@ -112,9 +116,9 @@ public class MainController {
             List<IssuesEntity> issuesEntity = issueRepository.findByMsisdn(msisdn);
             List<IssueResponse> issueResponses = issuesEntity.stream()
                     .map(entity -> {
-                        String ticketId = entity.getTicketId();
-                        ClientTypeEnum clientType = entity.getUserType();
-                        ResponseEntity<IssueResponse> resp = redmineClient.getIssueWithJournals(ticketId, clientType, entity);
+                        int issueId = entity.getIssueId();
+                        ClientTypeEnum clientType = ClientTypeEnum.valueOf(entity.getUserType());
+                        ResponseEntity<IssueResponse> resp = redmineClient.getIssueWithJournals(issueId, clientType, entity);
                         return CreateIssueRequestBuilder.issueResponse(resp.getBody().getIssue(), entity);
                     })
                     .collect(Collectors.toList());
@@ -140,22 +144,22 @@ public class MainController {
         return redmineClient.createIssue(createIssueRequest, clientType);
     }
 
-    @Operation(summary = "Update Issue by ticketId")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "OK"),
-            @ApiResponse(responseCode = "404", description = "Not Found"),
-            @ApiResponse(responseCode = "400", description = "Bad Request"),
-            @ApiResponse(responseCode = "500", description = "Server Error")})
-    @RequestMapping(path = "/ticket/{ticketId}", method = RequestMethod.PUT)
-    public ResponseEntity<Void> updateIssue(@PathVariable String ticketId, @RequestBody RedmineIssueRequest createRedmineIssueRequest) {
-        ClientTypeEnum clientType = ClientInfo.getClientType();
-        Optional<IssuesEntity> issuesEntity = issueRepository.findByTicketId(ticketId);
-        if (issuesEntity.isPresent()){
-            return redmineClient.updateIssue(issuesEntity.get().getIssueId(), createRedmineIssueRequest, clientType);
-        } else {
-            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
-        }
-    }
+//    @Operation(summary = "Update Issue by ticketId")
+//    @ApiResponses(value = {
+//            @ApiResponse(responseCode = "200", description = "OK"),
+//            @ApiResponse(responseCode = "404", description = "Not Found"),
+//            @ApiResponse(responseCode = "400", description = "Bad Request"),
+//            @ApiResponse(responseCode = "500", description = "Server Error")})
+//    @RequestMapping(path = "/ticket/{ticketId}", method = RequestMethod.PUT)
+//    public ResponseEntity<Void> updateIssue(@PathVariable String ticketId, @RequestBody RedmineIssueRequest createRedmineIssueRequest) {
+//        ClientTypeEnum clientType = ClientInfo.getClientType();
+//        Optional<IssuesEntity> issuesEntity = issueRepository.findByTicketId(ticketId);
+//        if (issuesEntity.isPresent()){
+//            return redmineClient.updateIssue(issuesEntity.get(), createRedmineIssueRequest, clientType);
+//        } else {
+//            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+//        }
+//    }
 
     @Operation(summary = "Add notes/comments")
     @ApiResponses(value = {
@@ -164,12 +168,12 @@ public class MainController {
             @ApiResponse(responseCode = "400", description = "Bad Request"),
             @ApiResponse(responseCode = "500", description = "Server Error")})
     @RequestMapping(path = "/ticket/{ticketId}/notes", method = RequestMethod.PUT)
-    public ResponseEntity<Void> addNotes(@PathVariable String ticketId, @RequestBody CreateIssueRequest createIssueRequest) {
+    public ResponseEntity<Void> addNotes(@PathVariable String ticketId, @RequestBody CreateNotesRequest createIssueRequest) {
         ClientTypeEnum clientType = ClientInfo.getClientType();
         Optional<IssuesEntity> issuesEntity = issueRepository.findByTicketId(ticketId);
         if (issuesEntity.isPresent()){
             RedmineIssueRequest createRedmineIssueRequest = CreateIssueRequestBuilder.addNotes(createIssueRequest, issuesEntity.get());
-            return redmineClient.updateIssue(issuesEntity.get().getIssueId(), createRedmineIssueRequest, clientType);
+            return redmineClient.updateIssue(issuesEntity.get(), createRedmineIssueRequest, clientType, false);
         } else {
             return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
         }
@@ -188,7 +192,7 @@ public class MainController {
         if (issuesEntity.isPresent()){
             if(clientType.equals(ClientTypeEnum.REGISTERED) || (clientType.equals(ClientTypeEnum.END_USER) && issuesEntity.get().getUserId().equals(ClientInfo.getClientId()))) {
                 RedmineIssueRequest createRedmineIssueRequest = CreateIssueRequestBuilder.resolveIssue(resolveStatusId);
-                return redmineClient.updateIssue(issuesEntity.get().getIssueId(), createRedmineIssueRequest, clientType);
+                return redmineClient.updateIssue(issuesEntity.get(), createRedmineIssueRequest, clientType, true);
             } else {
                 return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
             }

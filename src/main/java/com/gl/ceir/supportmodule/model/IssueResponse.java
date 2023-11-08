@@ -18,7 +18,7 @@ public class IssueResponse {
     private String emailAddress;
     private String category;
     private String userId;
-    private ClientTypeEnum userType;
+    private String userType;
     private String raisedBy;
     private Issue issue;
     private Boolean isPrivate;

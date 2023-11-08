@@ -5,6 +5,7 @@ import com.gl.ceir.supportmodule.repository.IssueRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Service;
 import javax.persistence.criteria.Predicate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -24,7 +26,7 @@ public class IssuesService {
     @Autowired
     private IssueRepository issuesRepository;
 
-    public List<IssuesEntity> getFilteredIssues(
+    public Page<IssuesEntity> getFilteredIssues(
             String startDate, String endDate, String ticketId, String contactNumber,
             String status, String clientType, Integer page, Integer size
     ) {
@@ -62,10 +64,10 @@ public class IssuesService {
             // Fetch filtered issues
             Page<IssuesEntity> pageResult = issuesRepository.findAll(specification, pageRequest);
 
-            return pageResult.getContent();
+            return pageResult;
         } catch (Exception e) {
             e.printStackTrace();
-            return new ArrayList<>();
+            return new PageImpl<>(Collections.emptyList(), PageRequest.of(page, size), 0);
         }
     }
 }

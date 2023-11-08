@@ -31,6 +31,12 @@ public class RedmineClient {
     private int projectId;
     @Value("${redmine-tracker-id}")
     private int trackerId;
+    @Value("${redmine-create-status-id}")
+    private int createStatusId;
+    @Value("${redmine-create-status-name}")
+    private String createStatusName;
+    @Value("${redmine-resolve-status-name}")
+    private String resolveStatusName;
 
     @Autowired
     private IssueRepository issueRepository;
@@ -41,7 +47,7 @@ public class RedmineClient {
         this.restTemplate = restTemplate;
     }
 
-    public ResponseEntity<IssueResponse> getIssueWithJournals(String issueId, ClientTypeEnum clientType, IssuesEntity issuesEntity) {
+    public ResponseEntity<IssueResponse> getIssueWithJournals(int issueId, ClientTypeEnum clientType, IssuesEntity issuesEntity) {
         String key = getClientApiKey(clientType);
         HttpHeaders headers = new HttpHeaders();
         headers.set("Content-Type", "application/json");
@@ -65,7 +71,7 @@ public class RedmineClient {
 
     public ResponseEntity<IssueResponse> createIssue(CreateIssueRequest createIssueRequest, ClientTypeEnum clientType) {
         try {
-            RedmineIssueRequest createRedmineIssueRequest = CreateIssueRequestBuilder.redmineCreateIssueRequest(createIssueRequest, projectId, trackerId);
+            RedmineIssueRequest createRedmineIssueRequest = CreateIssueRequestBuilder.redmineCreateIssueRequest(createIssueRequest, projectId, trackerId, createStatusId);
             String key = getClientApiKey(clientType);
             HttpHeaders headers = new HttpHeaders();
             headers.set("Content-Type", "application/json");
@@ -78,7 +84,7 @@ public class RedmineClient {
             if (responseEntity.getStatusCode().is2xxSuccessful()) {
                 ObjectMapper mapper = new ObjectMapper();
                 RedmineResponse createdIssue = mapper.readValue(responseEntity.getBody(), RedmineResponse.class);
-                IssuesEntity issue = issueRepository.save(CreateIssueRequestBuilder.saveToDb(createIssueRequest, createdIssue.getIssue().getId()));
+                IssuesEntity issue = issueRepository.save(CreateIssueRequestBuilder.saveToDb(createIssueRequest, createdIssue.getIssue().getId(), createStatusName, clientType.name(), ClientInfo.getClientId()));
                 return new ResponseEntity<>(CreateIssueRequestBuilder.issueResponse(createdIssue.getIssue(), issue), HttpStatus.CREATED);
             } else {
                 return new ResponseEntity<>(new IssueResponse(), responseEntity.getStatusCode());
@@ -90,7 +96,7 @@ public class RedmineClient {
         }
     }
 
-    public ResponseEntity<Void> updateIssue(int issueId, RedmineIssueRequest updatedIssue, ClientTypeEnum clientType) {
+    public ResponseEntity<Void> updateIssue(IssuesEntity issuesEntity, RedmineIssueRequest updatedIssue, ClientTypeEnum clientType, boolean isResolved) {
         try {
             String key = getClientApiKey(clientType);
             HttpHeaders headers = new HttpHeaders();
@@ -100,13 +106,18 @@ public class RedmineClient {
             HttpEntity<RedmineIssueRequest> requestEntity = new HttpEntity<>(updatedIssue, headers);
 
             ResponseEntity<Void> responseEntity = restTemplate.exchange(
-                    baseUrl + "/issues/" + issueId + ".json",
+                    baseUrl + "/issues/" + issuesEntity.getIssueId() + ".json",
                     HttpMethod.PUT,
                     requestEntity,
                     Void.class
             );
 
             if (responseEntity.getStatusCode().is2xxSuccessful()) {
+                if(isResolved) {
+                    issuesEntity.setStatus(resolveStatusName);
+                    issuesEntity.setResolvedBy(ClientInfo.getClientId());
+                    issueRepository.save(issuesEntity);
+                }
                 return new ResponseEntity<>(HttpStatus.NO_CONTENT);
             } else {
                 return new ResponseEntity<>(responseEntity.getStatusCode());

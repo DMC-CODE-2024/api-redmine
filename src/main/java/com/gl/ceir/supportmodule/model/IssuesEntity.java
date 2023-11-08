@@ -1,22 +1,38 @@
 package com.gl.ceir.supportmodule.model;
 
 
+import com.gl.ceir.supportmodule.Constants.ClientTypeEnum;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.UUID;
+import java.util.Random;
 import java.util.concurrent.atomic.AtomicLong;
 
 @Entity
 @Data
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @Table(name = "issues")
-public class IssuesEntity extends BaseEntity{
+public class IssuesEntity {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    @Column(name = "user_type")
+    private String userType;
+    @Column(name = "user_id")
+    private String userId;
+    @Column(name = "raised_by")
+    private String raisedBy;
+    @Column(name = "resolved_by")
+    private String resolvedBy;
     @Column(name = "ticket_id", length = 36)
     private String ticketId;
     @Column(name = "mobile_number")
@@ -52,11 +68,11 @@ public class IssuesEntity extends BaseEntity{
     public void onCreate() {
         String PREFIX = "ST";
         DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd");
-        AtomicLong counter = new AtomicLong(0);
         LocalDateTime now = LocalDateTime.now();
         String datePart = now.format(DATE_FORMATTER);
-        long uniqueNumber = counter.incrementAndGet() % 100_000_000;
-        String numberPart = String.format("%08d", uniqueNumber);
+        Random random = new Random();
+        int randomValue = random.nextInt(100_000_000);
+        String numberPart = String.format("%08d", randomValue);
         ticketId = PREFIX + datePart + numberPart;
     }
 
