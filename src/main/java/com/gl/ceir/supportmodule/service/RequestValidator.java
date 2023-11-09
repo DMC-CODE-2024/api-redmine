@@ -12,11 +12,11 @@ public class RequestValidator {
             LocalDate parsedDate = LocalDate.parse(date, dateFormatter);
             String formattedDate = parsedDate.format(dateFormatter);
             if (!formattedDate.equals(date)) {
-                throw new IllegalArgumentException("Invalid date format. Expected format: yyyy-MM-dd");
+                throw new RuntimeException("Invalid date format. Expected format: yyyy-MM-dd");
             }
             return parsedDate;
         } catch (DateTimeParseException e) {
-            throw new IllegalArgumentException("Invalid date format. Expected format: yyyy-MM-dd");
+            throw new RuntimeException("Invalid date format. Expected format: yyyy-MM-dd");
         }
     }
 
@@ -25,13 +25,13 @@ public class RequestValidator {
         LocalDate endDate = convertStringDateToLocalDate(endTime);
         if (startDate != null || endDate != null) {
             if (startDate == null) {
-                throw new IllegalArgumentException("INVALID_START_TIME");
+                throw new RuntimeException("INVALID_START_TIME");
             } else if (endDate == null) {
-                throw new IllegalArgumentException("INVALID_END_TIME");
+                throw new RuntimeException("INVALID_END_TIME");
             } else if (endDate.isBefore(startDate)) {
-                throw new IllegalArgumentException("INVALID_TIME_RANGE");
+                throw new RuntimeException("END DATE LESS THAN START DATE");
             } else if (endDate.isAfter(LocalDate.now())) {
-                throw new IllegalArgumentException("INVALID_END_DATE");
+                throw new RuntimeException("END DATE CAN'T BE IN FUTURE");
             }
         }
     }
@@ -41,13 +41,13 @@ public class RequestValidator {
             limit = 20;
         }
         if (page == null) {
-            throw new IllegalArgumentException("INVALID_PAGINATION: page param cannot be null");
+            throw new RuntimeException("INVALID_PAGINATION: page param cannot be null");
         } else if (size == null) {
-            throw new IllegalArgumentException("INVALID_PAGINATION: size param cannot be null");
+            throw new RuntimeException("INVALID_PAGINATION: size param cannot be null");
         } else if (page < 0) {
-            throw new IllegalArgumentException("INVALID_PAGINATION: Page number should be positive integer");
+            throw new RuntimeException("INVALID_PAGINATION: Page number should be positive integer");
         } else if (size < 1 || size > 20) {
-            throw new IllegalArgumentException("INVALID_PAGINATION: Page Size minimum is 1 maximum is 20");
+            throw new RuntimeException("INVALID_PAGINATION: Page Size minimum is 1 maximum is 20");
         }
     }
 }

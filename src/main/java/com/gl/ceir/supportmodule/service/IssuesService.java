@@ -30,6 +30,7 @@ public class IssuesService {
             String startDate, String endDate, String ticketId, String contactNumber,
             String status, String clientType, Integer page, Integer size
     ) {
+        RequestValidator.validatePagination(page, size, limit);
         Specification<IssuesEntity> specification = (root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
 
@@ -67,7 +68,7 @@ public class IssuesService {
             return pageResult;
         } catch (Exception e) {
             e.printStackTrace();
-            return new PageImpl<>(Collections.emptyList(), PageRequest.of(page, size), 0);
+            throw e;
         }
     }
 }

@@ -63,8 +63,7 @@ public class RedmineClient {
             IssueResponse issueResponse = CreateIssueRequestBuilder.issueResponse(issue.getIssue(), issuesEntity);
             return new ResponseEntity<>(issueResponse, responseEntity.getStatusCode());
         } catch (IOException e) {
-            e.printStackTrace();
-            log.error(e);
+            log.error("exception while fetching issue for id: {}, ex: {}", issueId, e);
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
@@ -90,8 +89,7 @@ public class RedmineClient {
                 return new ResponseEntity<>(new IssueResponse(), responseEntity.getStatusCode());
             }
         } catch (Exception e) {
-            e.printStackTrace();
-            log.error(e);
+            log.error("exception in creating issue: {}", e);
             return new ResponseEntity<>(new IssueResponse(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
@@ -123,7 +121,7 @@ public class RedmineClient {
                 return new ResponseEntity<>(responseEntity.getStatusCode());
             }
         } catch (Exception e) {
-            log.error(e);
+            log.error("exception while updating issue for id: {}, ex: {}", issuesEntity.getIssueId(), e);
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
@@ -139,16 +137,26 @@ public class RedmineClient {
         String uploadUrl = baseUrl + "/uploads.json?filename=" + filename;
 
         try {
-            return restTemplate.exchange(uploadUrl, HttpMethod.POST, requestEntity, UploadResponse.class);
+            ResponseEntity<String> responseEntityString = restTemplate.exchange(uploadUrl, HttpMethod.POST, requestEntity, String.class);
+            String responseBody = responseEntityString.getBody();
+            System.out.println("Response Body: " + responseBody);
+
+            // Parse the response into UploadResponse
+            ObjectMapper mapper = new ObjectMapper();
+            UploadResponse uploadResponse = mapper.readValue(responseBody, UploadResponse.class);
+
+            return ResponseEntity.ok(uploadResponse);
         } catch (HttpClientErrorException e) {
+            log.error("exception while uploading file: {}", e);
             if (e.getStatusCode() == HttpStatus.UNPROCESSABLE_ENTITY) {
                 String errorMessage = "This file cannot be uploaded because it exceeds the maximum allowed file size (5 MB)";
                 return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(UploadResponse.builder()
-                        .upload(UploadResponse.UploadData.builder().token(errorMessage).build()).build());
+                        .upload(UploadResponse.UploadData.builder().message(errorMessage).build()).build());
             } else {
                 return ResponseEntity.status(e.getStatusCode()).body(null);
             }
         } catch (Exception e) {
+            log.error("exception while uploading file: {}", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
@@ -179,8 +187,7 @@ public class RedmineClient {
             RedmineResponse issue = objectMapper.readValue(responseEntity.getBody(), RedmineResponse.class);
             return new ResponseEntity<>(issue, responseEntity.getStatusCode());
         } catch (IOException e) {
-            e.printStackTrace();
-            log.error(e);
+            log.error("exception while fetching issue for id: {}, ex: {}",issueId, e);
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }

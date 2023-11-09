@@ -48,7 +48,7 @@ public class MainController {
     @Operation(summary = "Get filtered tickets")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json", schema = @Schema(implementation = PaginatedResponse.class))),
-            @ApiResponse(responseCode = "400", description = "Bad Request", content = @Content)})
+            @ApiResponse(responseCode = "400", description = "Bad Request", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class)))})
     @RequestMapping(path = "/ticket", method = RequestMethod.GET)
     public ResponseEntity<?> getFilteredIssues(
             @Parameter(description = "Start date (yyyy-MM-dd)", example = "2023-12-31", required = false) @RequestParam(required = false) String startDate,
@@ -73,10 +73,8 @@ public class MainController {
             PaginatedResponse response = PaginatedResponse.builder().data(issueResponses).currentPage(page).totalPages(pageResponse.getTotalPages()).totalElements(pageResponse.getTotalElements()).numberOfElements(pageResponse.getNumberOfElements()).build();
             return ResponseEntity.ok(response);
         } catch (Exception ex){
-            ex.printStackTrace();
-
             log.error("Exception while fetching filtered issues, {}",ex.getMessage());
-            return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(ErrorResponse.builder().message(ex.getMessage()).errorCode(HttpStatus.BAD_REQUEST.value()).build(), HttpStatus.BAD_REQUEST);
         }
     }
 
@@ -97,7 +95,6 @@ public class MainController {
                 return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
             }
         } catch (HttpClientErrorException.NotFound e) {
-            e.printStackTrace();
             log.error(e);
             return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
         } catch (Exception e) {
@@ -217,6 +214,7 @@ public class MainController {
             String fileName = file.getOriginalFilename();
             return redmineClient.uploadFile(fileName, fileContent, clientType);
         } catch (IOException e) {
+            log.error("exception in uploading media: {}", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
@@ -239,6 +237,7 @@ public class MainController {
                 return new ResponseEntity<>("Invalid ticket id", HttpStatus.NOT_FOUND);
             }
         } catch (Exception ex) {
+            log.error("exception in rate/feedback api: {}", ex);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
