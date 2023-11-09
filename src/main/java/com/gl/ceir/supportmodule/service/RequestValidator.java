@@ -6,16 +6,7 @@ import java.time.format.DateTimeParseException;
 
 public class RequestValidator {
 
-
-    public static void validate(String startTime, String endTime, Integer page, Integer size, Integer limit) {
-        LocalDate startDate = convertStringDateToLocalDate(startTime);
-        LocalDate endDate = convertStringDateToLocalDate(endTime);
-
-        validateTimes(startDate, endDate);
-        validatePagination(page, size, limit);
-    }
-
-    private static LocalDate convertStringDateToLocalDate(String date) {
+    public static LocalDate convertStringDateToLocalDate(String date) {
         DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         try {
             LocalDate parsedDate = LocalDate.parse(date, dateFormatter);
@@ -29,15 +20,17 @@ public class RequestValidator {
         }
     }
 
-    private static void validateTimes(LocalDate startTime, LocalDate endTime) {
-        if (startTime != null || endTime != null) {
-            if (startTime == null) {
+    public static void validateTimes(String startTime, String endTime) {
+        LocalDate startDate = convertStringDateToLocalDate(startTime);
+        LocalDate endDate = convertStringDateToLocalDate(endTime);
+        if (startDate != null || endDate != null) {
+            if (startDate == null) {
                 throw new IllegalArgumentException("INVALID_START_TIME");
-            } else if (endTime == null) {
+            } else if (endDate == null) {
                 throw new IllegalArgumentException("INVALID_END_TIME");
-            } else if (endTime.isBefore(startTime)) {
+            } else if (endDate.isBefore(startDate)) {
                 throw new IllegalArgumentException("INVALID_TIME_RANGE");
-            } else if (endTime.isAfter(LocalDate.now())) {
+            } else if (endDate.isAfter(LocalDate.now())) {
                 throw new IllegalArgumentException("INVALID_END_DATE");
             }
         }

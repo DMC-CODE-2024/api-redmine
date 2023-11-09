@@ -73,6 +73,8 @@ public class MainController {
             PaginatedResponse response = PaginatedResponse.builder().data(issueResponses).currentPage(page).totalPages(pageResponse.getTotalPages()).totalElements(pageResponse.getTotalElements()).numberOfElements(pageResponse.getNumberOfElements()).build();
             return ResponseEntity.ok(response);
         } catch (Exception ex){
+            ex.printStackTrace();
+
             log.error("Exception while fetching filtered issues, {}",ex.getMessage());
             return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
         }

@@ -30,11 +30,11 @@ public class IssuesService {
             String startDate, String endDate, String ticketId, String contactNumber,
             String status, String clientType, Integer page, Integer size
     ) {
-        RequestValidator.validate(startDate, endDate, page, size, limit);
         Specification<IssuesEntity> specification = (root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
 
             if (startDate != null && endDate != null) {
+                RequestValidator.validateTimes(startDate, endDate);
                 predicates.add(criteriaBuilder.between(root.get("createAt"), LocalDateTime.parse(startDate), LocalDateTime.parse(endDate)));
             }
 
