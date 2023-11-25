@@ -1,4 +1,4 @@
-package com.gl.ceir.supportmodule.model;
+package com.gl.ceir.supportmodule.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;

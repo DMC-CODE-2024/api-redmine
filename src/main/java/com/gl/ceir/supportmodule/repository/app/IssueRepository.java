@@ -1,10 +1,8 @@
-package com.gl.ceir.supportmodule.repository;
+package com.gl.ceir.supportmodule.repository.app;
 
-import com.gl.ceir.supportmodule.model.Issue;
-import com.gl.ceir.supportmodule.model.IssuesEntity;
+import com.gl.ceir.supportmodule.model.app.IssuesEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
-import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;

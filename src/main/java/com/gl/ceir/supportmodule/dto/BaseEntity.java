@@ -1,4 +1,4 @@
-package com.gl.ceir.supportmodule.model;
+package com.gl.ceir.supportmodule.dto;
 
 import com.gl.ceir.supportmodule.Constants.ClientTypeEnum;
 import com.gl.ceir.supportmodule.Constants.Constant;

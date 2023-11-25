@@ -1,7 +1,7 @@
 package com.gl.ceir.supportmodule.client;
 
 import com.gl.ceir.supportmodule.Constants.ClientTypeEnum;
-import com.gl.ceir.supportmodule.model.ClientInfo;
+import com.gl.ceir.supportmodule.dto.ClientInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;

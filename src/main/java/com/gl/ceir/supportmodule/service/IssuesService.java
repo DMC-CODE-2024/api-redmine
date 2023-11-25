@@ -1,20 +1,20 @@
 package com.gl.ceir.supportmodule.service;
 
-import com.gl.ceir.supportmodule.model.IssuesEntity;
-import com.gl.ceir.supportmodule.repository.IssueRepository;
+import com.gl.ceir.supportmodule.model.app.IssuesEntity;
+import com.gl.ceir.supportmodule.repository.app.IssueRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.criteria.Predicate;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -36,7 +36,9 @@ public class IssuesService {
 
             if (startDate != null && endDate != null) {
                 RequestValidator.validateTimes(startDate, endDate);
-                predicates.add(criteriaBuilder.between(root.get("createAt"), LocalDateTime.parse(startDate), LocalDateTime.parse(endDate)));
+                LocalDateTime startDateTime = LocalDateTime.of(LocalDate.parse(startDate), LocalTime.MIDNIGHT);
+                LocalDateTime endDateTime = LocalDateTime.of(LocalDate.parse(endDate), LocalTime.MAX);
+                predicates.add(criteriaBuilder.between(root.get("createAt"), startDateTime, endDateTime));
             }
 
             if (ticketId != null) {

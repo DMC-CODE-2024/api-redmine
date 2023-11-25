@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration status="warn">
     <Properties>
-        <Property name="basePath">/Users/radhay.anand/radhay-workspace/eirs-audit</Property>
+        <Property name="basePath">/Users/radhay.anand/radhay-workspace/support-module</Property>
     </Properties>
     <Appenders>
         <!-- Console Appender -->
@@ -28,7 +28,7 @@
         </Root>
 
         <!-- File Logger -->
-        <Logger name="org.gl.ceir" level="info" additivity="false">
+        <Logger name="com.gl.ceir.supportmodule" level="info" additivity="false">
             <appender-ref ref="fileLogger" />
         </Logger>
     </Loggers>

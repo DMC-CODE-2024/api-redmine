@@ -1,4 +1,4 @@
-package com.gl.ceir.supportmodule.model;
+package com.gl.ceir.supportmodule.dto;
 
 import com.gl.ceir.supportmodule.Constants.ClientTypeEnum;
 import org.springframework.stereotype.Component;
@@ -18,7 +18,6 @@ public class ClientInfo {
     public static ClientTypeEnum getClientType() {
         return clientType.get();
     }
-
     public static String getClientId() {
         return clientId.get();
     }

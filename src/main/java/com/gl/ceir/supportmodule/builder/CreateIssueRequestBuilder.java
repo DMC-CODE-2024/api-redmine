@@ -1,6 +1,7 @@
 package com.gl.ceir.supportmodule.builder;
 
-import com.gl.ceir.supportmodule.model.*;
+import com.gl.ceir.supportmodule.dto.*;
+import com.gl.ceir.supportmodule.model.app.IssuesEntity;
 
 public class CreateIssueRequestBuilder {
     public static RedmineIssueRequest redmineCreateIssueRequest(CreateIssueRequest createIssueRequest, int projectId, int tracker, int createIssueId) {
