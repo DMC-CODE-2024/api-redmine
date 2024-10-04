@@ -1,6 +1,0 @@
-[INFO ] 2024-09-25 22:18:03.644 [main] SupportModuleApplicationTests - Starting SupportModuleApplicationTests using Java 11.0.22 on Radhays-MacBook-Pro.local with PID 34497 (started by radhayanand in /Users/radhayanand/support-module)
-[INFO ] 2024-09-25 22:18:03.648 [main] SupportModuleApplicationTests - The following 1 profile is active: "mysql"
-[INFO ] 2024-09-25 22:19:20.923 [main] SupportModuleApplicationTests - Starting SupportModuleApplicationTests using Java 11.0.22 on Radhays-MacBook-Pro.local with PID 34700 (started by radhayanand in /Users/radhayanand/support-module)
-[INFO ] 2024-09-25 22:19:20.925 [main] SupportModuleApplicationTests - The following 1 profile is active: "mysql"
-[INFO ] 2024-09-25 22:19:25.368 [main] SupportModuleApplicationTests - Started SupportModuleApplicationTests in 4.565 seconds (JVM running for 5.239)
-[ERROR] 2024-09-25 22:19:26.377 [main] DbConnectionChecker - alert1701: DB connection failed for app while getting DB configuration value

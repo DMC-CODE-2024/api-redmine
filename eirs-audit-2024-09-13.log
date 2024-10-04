@@ -1,6 +1,0 @@
-[INFO ] 2024-09-13 12:57:55.410 [main] SupportModuleApplicationTests - Starting SupportModuleApplicationTests using Java 11.0.22 on Radhays-MacBook-Pro.local with PID 82323 (started by radhayanand in /Users/radhayanand/support-module)
-[INFO ] 2024-09-13 12:57:55.413 [main] SupportModuleApplicationTests - The following 1 profile is active: "mysql"
-[INFO ] 2024-09-13 12:57:59.539 [main] SupportModuleApplicationTests - Started SupportModuleApplicationTests in 4.25 seconds (JVM running for 5.071)
-[INFO ] 2024-09-13 13:11:29.196 [main] SupportModuleApplicationTests - Starting SupportModuleApplicationTests using Java 11.0.22 on Radhays-MacBook-Pro.local with PID 84542 (started by radhayanand in /Users/radhayanand/support-module)
-[INFO ] 2024-09-13 13:11:29.198 [main] SupportModuleApplicationTests - The following 1 profile is active: "mysql"
-[INFO ] 2024-09-13 13:11:33.036 [main] SupportModuleApplicationTests - Started SupportModuleApplicationTests in 3.961 seconds (JVM running for 4.841)
