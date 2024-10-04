@@ -1,0 +1,35 @@
+[INFO ] 2024-09-02 18:29:30.050 [main] SupportModuleApplication - Starting SupportModuleApplication using Java 11.0.22 on Radhays-MacBook-Pro.local with PID 60123 (/Users/radhayanand/support-module/target/classes started by radhayanand in /Users/radhayanand/support-module)
+[INFO ] 2024-09-02 18:29:30.056 [main] SupportModuleApplication - The following 1 profile is active: "mysql"
+[INFO ] 2024-09-02 18:30:15.769 [main] SupportModuleApplication - Starting SupportModuleApplication using Java 11.0.22 on Radhays-MacBook-Pro.local with PID 60227 (/Users/radhayanand/support-module/target/classes started by radhayanand in /Users/radhayanand/support-module)
+[INFO ] 2024-09-02 18:30:15.773 [main] SupportModuleApplication - The following 1 profile is active: "mysql"
+[INFO ] 2024-09-02 18:30:19.793 [main] SupportModuleApplication - Started SupportModuleApplication in 4.192 seconds (JVM running for 4.64)
+[ERROR] 2024-09-02 18:30:20.803 [main] DbConnectionChecker - alert1301: DB connection failed for app while getting DB configuration value
+[INFO ] 2024-09-02 18:31:33.063 [main] SupportModuleApplication - Starting SupportModuleApplication using Java 11.0.22 on Radhays-MacBook-Pro.local with PID 60464 (/Users/radhayanand/support-module/target/classes started by radhayanand in /Users/radhayanand/support-module)
+[INFO ] 2024-09-02 18:31:33.066 [main] SupportModuleApplication - The following 1 profile is active: "mysql"
+[INFO ] 2024-09-02 18:31:37.001 [main] SupportModuleApplication - Started SupportModuleApplication in 4.108 seconds (JVM running for 4.544)
+[ERROR] 2024-09-02 18:31:38.011 [main] DbConnectionChecker - alert1301: DB connection failed for app while getting DB configuration value
+[INFO ] 2024-09-02 18:32:09.295 [main] SupportModuleApplication - Starting SupportModuleApplication using Java 11.0.22 on Radhays-MacBook-Pro.local with PID 60565 (/Users/radhayanand/support-module/target/classes started by radhayanand in /Users/radhayanand/support-module)
+[INFO ] 2024-09-02 18:32:09.298 [main] SupportModuleApplication - The following 1 profile is active: "mysql"
+[INFO ] 2024-09-02 18:32:12.957 [main] SupportModuleApplication - Started SupportModuleApplication in 3.835 seconds (JVM running for 4.273)
+[ERROR] 2024-09-02 18:32:16.181 [http-nio-8088-exec-2] RedmineClient - exception while fetching issue for id: 280, ex: org.springframework.web.client.HttpClientErrorException$Forbidden: 403 Forbidden: [no body]
+[ERROR] 2024-09-02 18:33:08.065 [http-nio-8088-exec-3] RedmineClient - exception while fetching issue for id: 280, ex: org.springframework.web.client.HttpClientErrorException$Forbidden: 403 Forbidden: [no body]
+[ERROR] 2024-09-02 18:33:35.962 [http-nio-8088-exec-5] RedmineClient - exception while fetching issue for id: 280, ex: org.springframework.web.client.HttpClientErrorException$Forbidden: 403 Forbidden: [no body]
+[ERROR] 2024-09-02 18:33:56.639 [http-nio-8088-exec-8] RedmineClient - exception while fetching issue for id: 540, ex: org.springframework.web.client.HttpClientErrorException$Forbidden: 403 Forbidden: [no body]
+[INFO ] 2024-09-02 18:34:03.521 [main] SupportModuleApplication - Starting SupportModuleApplication using Java 11.0.22 on Radhays-MacBook-Pro.local with PID 60811 (/Users/radhayanand/support-module/target/classes started by radhayanand in /Users/radhayanand/support-module)
+[INFO ] 2024-09-02 18:34:03.526 [main] SupportModuleApplication - The following 1 profile is active: "mysql"
+[INFO ] 2024-09-02 18:34:07.872 [main] SupportModuleApplication - Started SupportModuleApplication in 4.555 seconds (JVM running for 5.189)
+[ERROR] 2024-09-02 18:37:06.422 [http-nio-8088-exec-2] RedmineClient - exception while fetching issue for id: 540, ex: org.springframework.web.client.HttpClientErrorException$Forbidden: 403 Forbidden: [no body]
+[ERROR] 2024-09-02 18:38:13.302 [http-nio-8088-exec-4] RedmineClient - exception while fetching issue for id: 540, ex: org.springframework.web.client.HttpClientErrorException$Forbidden: 403 Forbidden: [no body]
+[INFO ] 2024-09-02 18:38:14.741 [main] SupportModuleApplication - Starting SupportModuleApplication using Java 11.0.22 on Radhays-MacBook-Pro.local with PID 61449 (/Users/radhayanand/support-module/target/classes started by radhayanand in /Users/radhayanand/support-module)
+[INFO ] 2024-09-02 18:38:14.745 [main] SupportModuleApplication - The following 1 profile is active: "mysql"
+[INFO ] 2024-09-02 18:38:19.173 [main] SupportModuleApplication - Started SupportModuleApplication in 4.614 seconds (JVM running for 5.108)
+[INFO ] 2024-09-02 19:04:47.821 [main] SupportModuleApplication - Starting SupportModuleApplication using Java 11.0.22 on Radhays-MacBook-Pro.local with PID 64515 (/Users/radhayanand/support-module/target/classes started by radhayanand in /Users/radhayanand/support-module)
+[INFO ] 2024-09-02 19:04:47.825 [main] SupportModuleApplication - The following 1 profile is active: "mysql"
+[INFO ] 2024-09-02 19:04:52.175 [main] SupportModuleApplication - Started SupportModuleApplication in 4.54 seconds (JVM running for 5.023)
+[INFO ] 2024-09-02 19:05:24.248 [main] SupportModuleApplicationTests - Starting SupportModuleApplicationTests using Java 11.0.22 on Radhays-MacBook-Pro.local with PID 64601 (started by radhayanand in /Users/radhayanand/support-module)
+[INFO ] 2024-09-02 19:05:24.250 [main] SupportModuleApplicationTests - The following 1 profile is active: "mysql"
+[INFO ] 2024-09-02 19:05:28.164 [main] SupportModuleApplicationTests - Started SupportModuleApplicationTests in 4.047 seconds (JVM running for 4.67)
+[INFO ] 2024-07-26 21:48:26.895 [main] SupportModuleApplicationTests - Starting SupportModuleApplicationTests using Java 11.0.22 on Radhays-MacBook-Pro.local with PID 14592 (started by radhayanand in /Users/radhayanand/support-module)
+[INFO ] 2024-07-26 21:48:26.896 [main] SupportModuleApplicationTests - The following 1 profile is active: "mysql"
+[INFO ] 2024-07-26 21:48:31.017 [main] SupportModuleApplicationTests - Started SupportModuleApplicationTests in 4.237 seconds (JVM running for 4.875)
+[ERROR] 2024-07-26 21:48:32.033 [main] DbConnectionChecker - alert1301: DB connection failed for app while getting DB configuration value

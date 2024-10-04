@@ -24,6 +24,8 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -56,6 +58,11 @@ public class MainController {
     @Qualifier("redmineRepository")
     RedmineGenericRepository redmineGenericRepository;
 
+    @GetMapping("/health")
+    public ResponseEntity<String> healthCheck() {
+        return ResponseEntity.ok("OK");
+    }
+
 
     @Operation(summary = "Get filtered tickets")
     @ApiResponses(value = {
@@ -69,11 +76,12 @@ public class MainController {
             @RequestParam(required = false) String contactNumber,
             @RequestParam(required = false) String status,
             @RequestParam(required = false) String clientType,
+            @RequestParam(required = false) String raisedBy,
             @RequestParam int page,
             @RequestParam int size
     ) {
         try {
-            Page<IssuesEntity> pageResponse = issuesService.getFilteredIssues(startDate, endDate, ticketId, contactNumber, status, clientType, page, size);
+            Page<IssuesEntity> pageResponse = issuesService.getFilteredIssues(startDate, endDate, ticketId, contactNumber, status, clientType, page, size, raisedBy);
             List<IssueResponse> issueResponses = pageResponse.getContent().stream()
                     .map(entity -> {
                         try {
@@ -128,15 +136,19 @@ public class MainController {
 
     @Operation(summary = "Get issue by msisdn")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = IssueResponse.class)))),
+            @ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = PaginatedResponse.class)))),
             @ApiResponse(responseCode = "404", description = "Not Found", content = @Content),
             @ApiResponse(responseCode = "400", description = "Bad Request", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))),
             @ApiResponse(responseCode = "500", description = "Server Error", content = @Content)})
     @RequestMapping(path = "/ticket/msisdn/{msisdn}", method = RequestMethod.GET)
-    public ResponseEntity<?> getIssueByMsisdn(@PathVariable String msisdn) {
+    public ResponseEntity<?> getIssueByMsisdn(
+            @PathVariable String msisdn,
+            @RequestParam(value = "page", defaultValue = "0") @Parameter(description = "Page number") int page,
+            @RequestParam(value = "size", defaultValue = "10") @Parameter(description = "Page size") int size) {
         try {
-            List<IssuesEntity> issuesEntity = issueRepository.findByMsisdn(msisdn);
-            List<IssueResponse> issueResponses = issuesEntity.stream()
+            Pageable pageable = PageRequest.of(page, size);
+            Page<IssuesEntity> issuesEntityPage = issueRepository.findByMsisdn(msisdn, pageable);
+            List<IssueResponse> issueResponses = issuesEntityPage.getContent().stream()
                     .map(entity -> {
                         int issueId = entity.getIssueId();
                         ClientTypeEnum clientType = ClientTypeEnum.valueOf(entity.getUserType());
@@ -144,7 +156,15 @@ public class MainController {
                         return CreateIssueRequestBuilder.issueResponse(resp.getBody().getIssue(), entity);
                     })
                     .collect(Collectors.toList());
-            return new ResponseEntity<>(issueResponses, HttpStatus.OK);
+
+            PaginatedResponse<IssueResponse> response = new PaginatedResponse<>();
+            response.setData(issueResponses);
+            response.setCurrentPage(issuesEntityPage.getNumber());
+            response.setTotalPages(issuesEntityPage.getTotalPages());
+            response.setNumberOfElements(issuesEntityPage.getNumberOfElements());
+            response.setTotalElements(issuesEntityPage.getTotalElements());
+
+            return new ResponseEntity<>(response, HttpStatus.OK);
         } catch (RuntimeException rex) {
             return new ResponseEntity<>(ErrorResponse.builder().message(rex.getMessage()).errorCode(HttpStatus.BAD_REQUEST.value()).build(), HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
@@ -228,6 +248,7 @@ public class MainController {
         try {
             RedmineStatusEnum redmineStatusEnum = RedmineStatusEnum.valueOf(status);
             ClientTypeEnum clientType = ClientInfo.getClientType();
+            String test = ClientInfo.getClientId();
             Optional<IssuesEntity> issuesEntity = issueRepository.findByTicketId(ticketId);
             if (issuesEntity.isPresent()){
                 if(clientType.equals(ClientTypeEnum.REGISTERED) || (clientType.equals(ClientTypeEnum.END_USER) && issuesEntity.get().getUserId().equals(ClientInfo.getClientId()))) {
@@ -280,6 +301,7 @@ public class MainController {
             if (issuesEntity.isPresent()){
                 issuesEntity.get().setRating(feedbackRequest.getRatings());
                 issuesEntity.get().setFeedback(feedbackRequest.getFeedback());
+                issueRepository.save(issuesEntity.get());
                 return new ResponseEntity<>("Thanks for the feedback", HttpStatus.OK);
             } else {
                 return new ResponseEntity<>("Invalid ticket id", HttpStatus.NOT_FOUND);
@@ -293,10 +315,10 @@ public class MainController {
     }
 
     // Redmine api for testing
-    @RequestMapping(path = "/redmine-issue/{issueId}", method = RequestMethod.GET)
+    @RequestMapping(path = "/redmine-issue-id/{issueId}", method = RequestMethod.GET)
     public ResponseEntity<RedmineResponse> getRedmineIssueById(@PathVariable String issueId) {
         try {
-            ClientTypeEnum clientType = ClientInfo.getClientType();
+            ClientTypeEnum clientType = ClientTypeEnum.END_USER;
             return redmineClient.getRedmineIssueWithJournals(issueId, clientType);
         } catch (HttpClientErrorException.NotFound e) {
             log.error(e);
@@ -320,15 +342,11 @@ public class MainController {
             if(ClientTypeEnum.END_USER == ClientInfo.getClientType()) {
                 return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
             }
-            Optional<String> email = genericRepository.getEmailFromUsername(ClientInfo.getClientId());
-            if(!email.isPresent()) {
-                throw new RuntimeException("No email id found for the user "+ClientInfo.getClientId());
-            }
-            Optional<String> authorId = redmineGenericRepository.getAuthorId(email.get());
+            Optional<String> authorId = redmineGenericRepository.getAuthorId(ClientInfo.getClientId());
             if(!authorId.isPresent()) {
                 throw new RuntimeException("User does not exist");
             }
-            IssueStatusCounts myDashboard = redmineGenericRepository.getIssueStatusCounts(authorId.get(), redmineConfiguration.getCreatedStatusId(), redmineConfiguration.getProgressStatusId(), redmineConfiguration.getClosedStatusId(), redmineConfiguration.getResolvedStatusId());
+            IssueStatusCounts myDashboard = redmineGenericRepository.getIssueStatusCounts(authorId.get(), redmineConfiguration.getCreatedStatusId(), redmineConfiguration.getProgressStatusId(), redmineConfiguration.getClosedStatusId(), redmineConfiguration.getResolvedStatusId(), redmineConfiguration.getProjectId());
             IssueStatusCounts allDashBoard = redmineGenericRepository.getIssueStatusCountsForProject(redmineConfiguration.getProjectId(),redmineConfiguration.getCreatedStatusId(), redmineConfiguration.getProgressStatusId(), redmineConfiguration.getClosedStatusId(), redmineConfiguration.getResolvedStatusId());
             DashboardResponse response = DashboardResponse.builder().myDashboard(myDashboard).allDashboard(allDashBoard).build();
             return new ResponseEntity<>(response, HttpStatus.OK);
@@ -336,6 +354,27 @@ public class MainController {
             return new ResponseEntity<>(ErrorResponse.builder().message(rex.getMessage()).errorCode(HttpStatus.BAD_REQUEST.value()).build(), HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
             log.error(e);
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @Operation(summary = "Get Issue Categories by Project ID")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json", schema = @Schema(implementation = CategoryResponse.class))),
+            @ApiResponse(responseCode = "404", description = "Not Found", content = @Content),
+            @ApiResponse(responseCode = "400", description = "Bad Request", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "500", description = "Server Error", content = @Content)
+    })
+    @GetMapping("/projects/issue_categories")
+    public ResponseEntity<List<CategoryResponse>> getIssueCategories() {
+        try {
+            ClientTypeEnum clientType = ClientInfo.getClientType();
+
+            ResponseEntity<List<CategoryResponse>> response = redmineClient.getIssueCategories(redmineConfiguration.getProjectId(), clientType);
+            return response;
+        } catch (RuntimeException rex) {
+            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration status="warn">
     <Properties>
-        <Property name="basePath">/Users/radhay.anand/radhay-workspace/support-module</Property>
+        <Property name="basePath">/Users/radhayanand/support-module</Property>
     </Properties>
     <Appenders>
         <!-- Console Appender -->
@@ -24,7 +24,7 @@
     <Loggers>
         <!-- Console Logger -->
         <Root level="info">
-            <AppenderRef ref="Console" />
+            <appender-ref ref="Console" />
         </Root>
 
         <!-- File Logger -->

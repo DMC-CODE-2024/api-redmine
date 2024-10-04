@@ -23,4 +23,10 @@ public class IssueResponse {
     private String raisedBy;
     private Issue issue;
     private Boolean isPrivate;
+    private String status;
+    private String documentType;
+    private String address;
+    private String province;
+    private String district;
+    private String commune;
 }

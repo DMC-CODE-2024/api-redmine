@@ -1,0 +1,15 @@
+[INFO ] 2024-07-27 05:13:45.896 [main] SupportModuleApplication - Starting SupportModuleApplication using Java 11.0.22 on Radhays-MBP with PID 54721 (/Users/radhayanand/support-module/target/classes started by radhayanand in /Users/radhayanand/support-module)
+[INFO ] 2024-07-27 05:13:45.899 [main] SupportModuleApplication - No active profile set, falling back to 1 default profile: "default"
+[INFO ] 2024-07-27 05:13:49.606 [main] SupportModuleApplication - Started SupportModuleApplication in 3.871 seconds (JVM running for 4.305)
+[ERROR] 2024-07-27 05:13:52.783 [http-nio-8088-exec-1] MainController - java.lang.NullPointerException
+[INFO ] 2024-07-27 05:14:55.295 [main] SupportModuleApplication - Starting SupportModuleApplication using Java 11.0.22 on Radhays-MBP with PID 54879 (/Users/radhayanand/support-module/target/classes started by radhayanand in /Users/radhayanand/support-module)
+[INFO ] 2024-07-27 05:14:55.299 [main] SupportModuleApplication - No active profile set, falling back to 1 default profile: "default"
+[INFO ] 2024-07-27 05:14:59.352 [main] SupportModuleApplication - Started SupportModuleApplication in 4.223 seconds (JVM running for 4.652)
+[ERROR] 2024-07-27 05:15:00.521 [http-nio-8088-exec-2] MainController - java.lang.NullPointerException
+[INFO ] 2024-07-27 05:15:32.686 [main] SupportModuleApplication - Starting SupportModuleApplication using Java 11.0.22 on Radhays-MBP with PID 54960 (/Users/radhayanand/support-module/target/classes started by radhayanand in /Users/radhayanand/support-module)
+[INFO ] 2024-07-27 05:15:32.691 [main] SupportModuleApplication - No active profile set, falling back to 1 default profile: "default"
+[INFO ] 2024-07-27 05:15:36.519 [main] SupportModuleApplication - Started SupportModuleApplication in 4.018 seconds (JVM running for 4.513)
+[ERROR] 2024-07-27 05:16:16.633 [http-nio-8088-exec-2] MainController - java.lang.NullPointerException
+[INFO ] 2024-07-27 05:16:48.739 [main] SupportModuleApplication - Starting SupportModuleApplication using Java 11.0.22 on Radhays-MBP with PID 55133 (/Users/radhayanand/support-module/target/classes started by radhayanand in /Users/radhayanand/support-module)
+[INFO ] 2024-07-27 05:16:48.743 [main] SupportModuleApplication - No active profile set, falling back to 1 default profile: "default"
+[INFO ] 2024-07-27 05:16:53.079 [main] SupportModuleApplication - Started SupportModuleApplication in 4.523 seconds (JVM running for 5.002)

@@ -6,18 +6,12 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
-
-
 @Data
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class PaginatedResponse<T> {
-    private List<IssueResponse> data;
-    private int currentPage;
-    private int totalPages;
-    private int numberOfElements;
-    private long totalElements;
+public class CategoryResponse {
+    private int id;
+    private String name;
 }

@@ -1,5 +1,6 @@
 package com.gl.ceir.supportmodule.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -13,6 +14,7 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Issue {
     private int id;
     private Project project;
@@ -20,7 +22,7 @@ public class Issue {
     private Status status;
     private Priority priority;
     private User author;
-    private User assigned_to;
+    private Category category;
     private String subject;
     private String description;
     private String start_date;
@@ -74,6 +76,15 @@ public class Issue {
     }
 
     @Data
+    public static class Category {
+        private int id;
+        private String name;
+    }
+
+    @Data
+    @Builder
+    @AllArgsConstructor
+    @NoArgsConstructor
     public static class Field {
         private int id;
         private String name;

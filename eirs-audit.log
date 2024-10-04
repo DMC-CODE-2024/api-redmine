@@ -1,0 +1,4 @@
+[INFO ] 2024-10-04 20:44:04.755 [main] SupportModuleApplicationTests - Starting SupportModuleApplicationTests using Java 11.0.22 on Radhays-MBP with PID 38783 (started by radhayanand in /Users/radhayanand/support-module)
+[INFO ] 2024-10-04 20:44:04.758 [main] SupportModuleApplicationTests - The following 1 profile is active: "mysql"
+[INFO ] 2024-10-04 20:44:09.584 [main] SupportModuleApplicationTests - Started SupportModuleApplicationTests in 4.957 seconds (JVM running for 10.679)
+[ERROR] 2024-10-04 20:44:10.598 [main] DbConnectionChecker - alert1701: DB connection failed for app while getting DB configuration value

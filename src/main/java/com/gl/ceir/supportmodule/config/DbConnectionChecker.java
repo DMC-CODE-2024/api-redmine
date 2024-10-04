@@ -25,7 +25,7 @@ public class DbConnectionChecker {
         try (Connection connection = dataSource.getConnection()) {
             System.out.println("Database connection for " + dbName + " is successful!");
         } catch (SQLException e) {
-            log.error("alert1301: DB connection failed for " + dbName + " while getting DB configuration value");
+            log.error("alert1701: DB connection failed for " + dbName + " while getting DB configuration value");
             e.printStackTrace();
         }
     }

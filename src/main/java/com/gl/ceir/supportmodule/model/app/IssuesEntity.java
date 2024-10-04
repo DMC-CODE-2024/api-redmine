@@ -20,7 +20,7 @@ import java.util.concurrent.atomic.AtomicLong;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "issues")
+@Table(name = "issue")
 public class IssuesEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -42,10 +42,10 @@ public class IssuesEntity {
     @Column(name = "category")
     private String category;
     @CreationTimestamp
-    @Column(name = "created_at")
+    @Column(name = "created_on")
     private LocalDateTime createAt = LocalDateTime.now();
     @UpdateTimestamp
-    @Column(name = "updated_at")
+    @Column(name = "modified_on")
     private LocalDateTime updatedAt = LocalDateTime.now();
     @Column(name = "redmine_issue_id")
     private int issueId;
@@ -61,12 +61,24 @@ public class IssuesEntity {
     private String feedback;
     @Column(name = "rating")
     private String rating;
+    @Column(name = "reference_id")
+    private String referenceId;
     @Column(name = "is_private")
     private Boolean isPrivate;
+    @Column(name = "document_type")
+    private String documentType;
+    @Column(name = "address")
+    private String address;
+    @Column(name = "province")
+    private String province;
+    @Column(name = "district")
+    private String district;
+    @Column(name = "commune")
+    private String commune;
 
     @PrePersist
     public void onCreate() {
-        String PREFIX = "ST";
+        String PREFIX = "T";
         DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd");
         LocalDateTime now = LocalDateTime.now();
         String datePart = now.format(DATE_FORMATTER);

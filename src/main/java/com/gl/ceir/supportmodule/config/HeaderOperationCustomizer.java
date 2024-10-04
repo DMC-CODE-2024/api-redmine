@@ -28,8 +28,17 @@ public class HeaderOperationCustomizer implements OperationCustomizer {
                 .schema(new StringSchema())
                 .example("AgentId or msisdn(for public interface)");
 
+        Parameter loggedInUser = new Parameter()
+                .in("header")
+                .name("loggedInUser")
+                .description("loggedInUser Header")
+                .required(true)
+                .schema(new StringSchema())
+                .example("loggedInUser id for filtering API)");
+
         operation.addParametersItem(clientTypeHeader);
         operation.addParametersItem(clientIdHeader);
+        operation.addParametersItem(loggedInUser);
 
         return operation;
     }

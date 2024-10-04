@@ -6,7 +6,9 @@ import com.gl.ceir.supportmodule.builder.CreateIssueRequestBuilder;
 import com.gl.ceir.supportmodule.config.RedmineConfiguration;
 import com.gl.ceir.supportmodule.dto.*;
 import com.gl.ceir.supportmodule.enums.RedmineStatusEnum;
+import com.gl.ceir.supportmodule.model.app.DuplicateDeviceDetail;
 import com.gl.ceir.supportmodule.model.app.IssuesEntity;
+import com.gl.ceir.supportmodule.repository.app.DuplicateDeviceDetailRepository;
 import com.gl.ceir.supportmodule.repository.app.GenericRepository;
 import com.gl.ceir.supportmodule.repository.app.IssueRepository;
 import com.gl.ceir.supportmodule.repository.redmine.RedmineGenericRepository;
@@ -19,13 +21,25 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Component
 public class RedmineClient {
     private final Logger log = LogManager.getLogger(getClass());
     @Value("${redmine.registered-user-api-key}")
     private String registeredUserApiKey;
+    @Value("${custom_field_id_address}")
+    private Integer cfAddress;
+    @Value("${custom_field_id_province}")
+    private Integer cfProvince;
+    @Value("${custom_field_id_district}")
+    private Integer cfDistrict;
+    @Value("${custom_field_id_commune}")
+    private Integer cfCommune;
     @Autowired
     RedmineConfiguration redmineConfiguration;
     @Autowired
@@ -34,6 +48,8 @@ public class RedmineClient {
     private GenericRepository genericRepository;
     @Autowired
     private RedmineGenericRepository redmineGenericRepository;
+    @Autowired
+    private DuplicateDeviceDetailRepository duplicateDeviceDetailRepository;
 
     private final RestTemplate restTemplate;
 
@@ -54,6 +70,8 @@ public class RedmineClient {
 
             ObjectMapper objectMapper = new ObjectMapper();
             RedmineResponse issue = objectMapper.readValue(responseEntity.getBody(), RedmineResponse.class);
+            Collections.sort(issue.getIssue().getJournals(),
+                    (j1, j2) -> j2.getCreated_on().compareTo(j1.getCreated_on()));
             IssueResponse issueResponse = CreateIssueRequestBuilder.issueResponse(issue.getIssue(), issuesEntity);
             return new ResponseEntity<>(issueResponse, responseEntity.getStatusCode());
         } catch (Exception e) {
@@ -66,6 +84,28 @@ public class RedmineClient {
         String key = getClientApiKey(clientType);
         try {
             RedmineIssueRequest createRedmineIssueRequest = CreateIssueRequestBuilder.redmineCreateIssueRequest(createIssueRequest, redmineConfiguration.getProjectId(), redmineConfiguration.getTrackerId(), redmineConfiguration.getCreatedStatusId());
+            if(createIssueRequest.getCategory() != null && createIssueRequest.getCategoryId() != null) {
+                createRedmineIssueRequest.getIssue().setCategory_id(createIssueRequest.getCategoryId());
+                if(createIssueRequest.getCategory().equalsIgnoreCase("Duplicate")) {
+                    ArrayList<Issue.Field> customFields = new ArrayList<>();
+                    createRedmineIssueRequest.getIssue().setTracker_id(redmineConfiguration.getDuplicateTrackerId());
+                    if(cfAddress != null && createIssueRequest.getAddress() != null) {
+                        customFields.add(Issue.Field.builder().id(cfAddress).name("a").value(createIssueRequest.getAddress()).build());
+                    }
+                    if(cfDistrict != null && createIssueRequest.getDistrict() != null) {
+                        customFields.add(Issue.Field.builder().id(cfDistrict).name("district").value(createIssueRequest.getDistrict()).build());
+                    }
+                    if(cfCommune != null && createIssueRequest.getCommune() != null) {
+                        customFields.add(Issue.Field.builder().id(cfCommune).name("commune").value(createIssueRequest.getCommune()).build());
+                    }
+                    if(cfProvince != null && createIssueRequest.getProvince() != null) {
+                        customFields.add(Issue.Field.builder().id(cfProvince).name("province").value(createIssueRequest.getProvince()).build());
+                    }
+                    if(!customFields.isEmpty()){
+                        createRedmineIssueRequest.getIssue().setCustom_fields(customFields);
+                    }
+                }
+            }
             HttpHeaders headers = new HttpHeaders();
             headers.set("Content-Type", "application/json");
             headers.set("X-Redmine-API-Key", key);
@@ -78,6 +118,17 @@ public class RedmineClient {
                 ObjectMapper mapper = new ObjectMapper();
                 RedmineResponse createdIssue = mapper.readValue(responseEntity.getBody(), RedmineResponse.class);
                 IssuesEntity issue = issueRepository.save(CreateIssueRequestBuilder.saveToDb(createIssueRequest, createdIssue.getIssue().getId(), redmineConfiguration.getCreatedStatusName(), clientType.name(), ClientInfo.getClientId()));
+                if (createIssueRequest.getTransactionId() == null) {
+                    throw new Exception("Transaction Id null in the request");
+                }
+                if(createIssueRequest.getCategory() != null && createIssueRequest.getCategory().equalsIgnoreCase("Duplicate")) {
+                    Optional<DuplicateDeviceDetail> duplicateDeviceDetailOptional = duplicateDeviceDetailRepository.findByTransactionId(createIssueRequest.getTransactionId());
+                    if(duplicateDeviceDetailOptional.isPresent()) {
+                        DuplicateDeviceDetail duplicateDeviceDetail = duplicateDeviceDetailOptional.get();
+                        duplicateDeviceDetail.setRedmineTktId(String.valueOf(createdIssue.getIssue().getId()));
+                        duplicateDeviceDetailRepository.save(duplicateDeviceDetail);
+                    }
+                }
                 return new ResponseEntity<>(CreateIssueRequestBuilder.issueResponse(createdIssue.getIssue(), issue), HttpStatus.CREATED);
             } else {
                 return new ResponseEntity<>(new IssueResponse(), responseEntity.getStatusCode());
@@ -191,17 +242,43 @@ public class RedmineClient {
             case END_USER:
                 return redmineConfiguration.getEndUserApiKey();
             case REGISTERED:
-                Optional<String> email = genericRepository.getEmailFromUsername(ClientInfo.getClientId());
-                if(!email.isPresent()) {
-                    throw new RuntimeException("No email id found for the user "+ClientInfo.getClientId());
-                }
-                Optional<String> key = redmineGenericRepository.getApiKey(email.get());
+//                Optional<String> email = genericRepository.getEmailFromUsername(ClientInfo.getClientId());
+//                if(!email.isPresent()) {
+//                    throw new RuntimeException("No email id found for the user "+ClientInfo.getClientId());
+//                }
+                Optional<String> key = redmineGenericRepository.getApiKey(ClientInfo.getClientId());
                 return key.orElseThrow(() -> new RuntimeException("User not found"));
             default:
                 throw new IllegalArgumentException("Unknown client type: " + type);
         }
     }
 
+    public ResponseEntity<List<CategoryResponse>> getIssueCategories(Integer projectIdOrIdentifier, ClientTypeEnum clientType) {
+        String key = getClientApiKey(clientType);
+        try {
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("Content-Type", "application/json");
+            headers.set("X-Redmine-API-Key", key);
 
+            HttpEntity<String> requestEntity = new HttpEntity<>(headers);
+            RestTemplate restTemplate = new RestTemplate();
+            String baseUrl = redmineConfiguration.getBaseUrl();
+
+            ResponseEntity<String> responseEntity = restTemplate.exchange(baseUrl + "/projects/" + projectIdOrIdentifier + "/issue_categories.json", HttpMethod.GET, requestEntity, String.class);
+
+            ObjectMapper objectMapper = new ObjectMapper();
+            IssueCategoriesResponse categoriesResponse = objectMapper.readValue(responseEntity.getBody(), IssueCategoriesResponse.class);
+
+            // Extract the names of all categories
+            List<CategoryResponse> categoryResponses = categoriesResponse.getIssue_categories().stream()
+                    .map(issueCategory -> new CategoryResponse(issueCategory.getId(), issueCategory.getName()))
+                    .collect(Collectors.toList());
+
+            return new ResponseEntity<>(categoryResponses, responseEntity.getStatusCode());
+        } catch (Exception e) {
+            log.error("Exception while fetching issue categories for project: {}, ex: {}", projectIdOrIdentifier, e);
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
 }
 

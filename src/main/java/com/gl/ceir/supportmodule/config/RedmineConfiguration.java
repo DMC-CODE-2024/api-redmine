@@ -12,6 +12,7 @@ public class RedmineConfiguration {
     private String endUserApiKey;
     private int projectId;
     private int trackerId;
+    private int duplicateTrackerId;
     private int createdStatusId;
     private String createdStatusName;
     private int progressStatusId;

@@ -19,7 +19,7 @@ public class RedmineGenericRepository {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    public IssueStatusCounts getIssueStatusCounts(String authorId, int openStatusId, int inProgressStatusId, int closedStatusId, int resolvedStatusId) {
+    public IssueStatusCounts getIssueStatusCounts(String authorId, int openStatusId, int inProgressStatusId, int closedStatusId, int resolvedStatusId, int projectId) {
         String sql = "SELECT " +
                 "COUNT(*) AS totalTickets, " +
                 "SUM(CASE WHEN status_id = ? THEN 1 ELSE 0 END) AS openTickets, " +
@@ -27,10 +27,11 @@ public class RedmineGenericRepository {
                 "SUM(CASE WHEN status_id = ? THEN 1 ELSE 0 END) AS closedTickets, " +
                 "SUM(CASE WHEN status_id = ? THEN 1 ELSE 0 END) AS resolvedTickets " +
                 "FROM issues " +
-                "WHERE author_id = ?";
+                "WHERE author_id = ?" +
+                "AND project_id = ?";
 
         return jdbcTemplate.queryForObject(sql, new BeanPropertyRowMapper<>(IssueStatusCounts.class),
-                openStatusId, inProgressStatusId, closedStatusId, resolvedStatusId, authorId);
+                openStatusId, inProgressStatusId, closedStatusId, resolvedStatusId, authorId, projectId);
     }
 
     public IssueStatusCounts getIssueStatusCountsForProject(int projectId, int openStatusId, int inProgressStatusId, int closedStatusId, int resolvedStatusId) {

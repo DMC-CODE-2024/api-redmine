@@ -2,6 +2,7 @@ package com.gl.ceir.supportmodule.builder;
 
 import com.gl.ceir.supportmodule.dto.*;
 import com.gl.ceir.supportmodule.model.app.IssuesEntity;
+import org.springframework.beans.factory.annotation.Value;
 
 public class CreateIssueRequestBuilder {
     public static RedmineIssueRequest redmineCreateIssueRequest(CreateIssueRequest createIssueRequest, int projectId, int tracker, int createIssueId) {
@@ -31,6 +32,12 @@ public class CreateIssueRequestBuilder {
                 .userId(userId)
                 .userType(userType)
                 .raisedBy(req.getRaisedBy())
+                .referenceId(req.getReferenceId())
+                .documentType(req.getDocumentType())
+                .address(req.getAddress())
+                .province(req.getProvince())
+                .district(req.getDistrict())
+                .commune(req.getCommune())
                 .build();
     }
 
@@ -47,6 +54,12 @@ public class CreateIssueRequestBuilder {
                 .raisedBy(issue.getRaisedBy())
                 .userId(issue.getUserId())
                 .userType(issue.getUserType())
+                .status(issue.getStatus())
+                .documentType(issue.getDocumentType())
+                .address(issue.getAddress())
+                .province(issue.getProvince())
+                .district(issue.getDistrict())
+                .commune(issue.getCommune())
                 .build();
     }
 
@@ -54,6 +67,7 @@ public class CreateIssueRequestBuilder {
         RedmineCreateIssueRequest issue = RedmineCreateIssueRequest.builder()
                 .notes(createIssueRequest.getNotes())
                 .private_notes(createIssueRequest.getPrivateNotes())
+                .uploads(createIssueRequest.getAttachments())
                 .build();
         return RedmineIssueRequest.builder().issue(issue).build();
     }

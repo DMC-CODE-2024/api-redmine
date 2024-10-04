@@ -16,6 +16,7 @@ public class RedmineCreateIssueRequest {
     private Integer priority_id;
     private String subject;
     private List<AttachmentRequest> uploads;
+    private List<Issue.Field> custom_fields;
     private String description;
     private Integer category_id;
     private String notes;

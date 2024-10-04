@@ -24,16 +24,17 @@ public class ClientNameFilter extends OncePerRequestFilter {
         String requestURI = request.getRequestURI();
 
         // Check if the request URI contains "swagger" or "v3/api-docs"
-        if (requestURI.contains("swagger") || requestURI.contains("v3/api-docs")) {
+        if (requestURI.contains("swagger") || requestURI.contains("v3/api-docs") || requestURI.contains("webhook") || requestURI.contains("redmine-issue-id")) {
             // If it's a Swagger request or API documentation request, bypass the filter
             filterChain.doFilter(request, response);
         } else {
             try {
                 ClientTypeEnum clientType = ClientTypeEnum.valueOf(request.getHeader("X-Client-Type"));
                 String clientId = request.getHeader("X-Client-Id");
+                String loggedInUser = request.getHeader("loggedInUser");
 
                 if (Objects.nonNull(clientId)) {
-                    ClientInfo.setClientInfo(clientType, clientId);
+                    ClientInfo.setClientInfo(clientType, clientId, loggedInUser);
 
                     filterChain.doFilter(request, response);
 
