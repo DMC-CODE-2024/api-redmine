@@ -1,0 +1,4 @@
+[INFO ] 2024-10-07 01:22:01.843 [main] SupportModuleApplication - Starting SupportModuleApplication using Java 21.0.3 with PID 81485 (/Users/radhayanand/support-module/target/classes started by radhayanand in /Users/radhayanand/support-module)
+[INFO ] 2024-10-07 01:22:01.846 [main] SupportModuleApplication - The following 1 profile is active: "mysql"
+[INFO ] 2024-10-07 01:22:06.344 [main] SupportModuleApplication - Started SupportModuleApplication in 4.66 seconds (process running for 5.225)
+[ERROR] 2024-10-07 01:22:07.349 [main] DbConnectionChecker - alert1701: DB connection failed for app while getting DB configuration value

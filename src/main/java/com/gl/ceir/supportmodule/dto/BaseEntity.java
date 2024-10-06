@@ -5,7 +5,7 @@ import com.gl.ceir.supportmodule.Constants.Constant;
 import lombok.Builder;
 import lombok.Data;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.util.Objects;
 
 @Data
