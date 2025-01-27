@@ -46,7 +46,7 @@ public class RequestValidator {
             throw new RuntimeException("INVALID_PAGINATION: size param cannot be null");
         } else if (page < 0) {
             throw new RuntimeException("INVALID_PAGINATION: Page number should be positive integer");
-        } else if (size < 1 || size > 20) {
+        } else if (size < 1 || size > limit) {
             throw new RuntimeException("INVALID_PAGINATION: Page Size minimum is 1 maximum is 20");
         }
     }
